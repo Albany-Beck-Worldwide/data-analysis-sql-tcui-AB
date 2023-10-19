@@ -159,11 +159,13 @@ SELECT * FROM e_de_dm;
 /* 1. Create a SQL statement to list all managers and their titles. */
 SELECT e.emp_no AS 'Employee Number', 
 CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name, 
-t.title AS Title
+GROUP_CONCAT(DISTINCT t.title) AS All_Titles
 FROM employees e 
 INNER JOIN dept_manager dm ON e.emp_no = dm.emp_no
 LEFT JOIN titles t ON e.emp_no = t.emp_no
-WHERE YEAR(dm.to_date) = 9999;
+GROUP BY e.emp_no;
+
+/* WHERE YEAR(dm.to_date) = 9999; */
 
 
 /* 2. Create a SQL statement to show the salary of all employees and their department 
@@ -171,14 +173,14 @@ name. */
 
 SELECT CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name,
 MAX(s.salary) AS Salary,
-GROUP_CONCAT(DISTINCT d.dept_name) AS 'Department Name'
+GROUP_CONCAT(DISTINCT d.dept_name) AS Department_Name
 FROM employees e
 INNER JOIN e_de_dm ON e.emp_no = e_de_dm.e_emp_no
 LEFT JOIN departments d ON d.dept_no = e_de_dm.dedm_dept_no
 LEFT JOIN salaries s ON e.emp_no = s.emp_no
-WHERE YEAR(dedm_to_date) = 9999 
 GROUP BY e.emp_no;
 
+/* WHERE YEAR(dedm_to_date) = 9999; */ 
 
 /* 3. Create a SQL statement to show the hire date and birth date who belongs to HR 
 department. */
@@ -191,8 +193,9 @@ e_de_dm.dedm_to_date AS Contract_End
 FROM employees e 
 INNER JOIN e_de_dm ON e.emp_no = e_de_dm.e_emp_no
 LEFT JOIN departments d ON d.dept_no = e_de_dm.dedm_dept_no
-WHERE dept_name = 'Human Resources' AND 
-YEAR(dedm_to_date) = 9999;
+WHERE dept_name = 'Human Resources';
+
+/* AND YEAR(dedm_to_date) = 9999; */
 
 
 /* 4. Create a SQL statement to show all departments and their department’s managers. */
@@ -201,8 +204,9 @@ SELECT d.dept_name AS Department_Name,
 CONCAT_WS(' ', e.first_name, e.last_name) AS Department_Managers_Full_Name
 FROM employees e
 INNER JOIN dept_manager dm ON e.emp_no = dm.emp_no
-RIGHT JOIN departments d ON dm.dept_no = d.dept_no
-WHERE YEAR(to_date) = 9999;
+RIGHT JOIN departments d ON dm.dept_no = d.dept_no;
+
+/* WHERE YEAR(to_date) = 9999; */
 
 
 /* 5. Create a SQL statement to show a list of HR’s employees who were hired after 1986. */
@@ -220,9 +224,11 @@ CREATE OR REPLACE TEMPORARY TABLE HR_emp (
     dept_name = 'Human Resources'
 );
 
-SELECT Full_Name, Hire_Date
-FROM HR_emp
-WHERE YEAR(Hire_Date) > 1986; 
+SELECT Full_Name, 
+Hire_Date
+FROM HR_emp;
+
+/* WHERE YEAR(Hire_Date) > 1986; */ 
 
 
 /* 6. Create a SQL statement to increase any employee’s salary up to 2%. Assume the 
@@ -263,9 +269,9 @@ CREATE OR REPLACE TEMPORARY TABLE del_mark_A (
     FROM employees e
     INNER JOIN e_de_dm ON e_de_dm.e_emp_no = e.emp_no
     INNER JOIN departments d ON e_de_dm.dedm_dept_no = d.dept_no
-    WHERE YEAR(dedm_to_date) = 9999 
+    
 );
-
+/* WHERE YEAR(dedm_to_date) = 9999 */ 
 SELECT * FROM del_mark_A;
 
 DELETE FROM del_mark_A
@@ -276,7 +282,7 @@ first_name LIKE 'A%';
 /* 8. Create a database view to list the full names of all departments’ managers, and their 
 salaries. */
 
-CREATE VIEW dept_mng_sal AS (
+CREATE OR REPLACE VIEW dept_mng_sal AS (
     SELECT d.dept_name AS Department_Name,
     CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name,
     MAX(s.salary) AS Salary
@@ -291,7 +297,7 @@ CREATE VIEW dept_mng_sal AS (
 /* 9. Create a database view to list all departments and their department’s managers, who 
 were hired between 1980 and 1990. */
 
-CREATE VIEW dept_mng_80_90 AS (
+CREATE OR REPLACE VIEW dept_mng_80_90 AS (
     SELECT d.dept_name AS Department_Name,
     CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name,
     MAX(s.salary) AS Salary,
