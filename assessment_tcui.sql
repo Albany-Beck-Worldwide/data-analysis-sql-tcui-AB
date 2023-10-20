@@ -333,6 +333,10 @@ CREATE OR REPLACE VIEW q8_mng AS (
     LEFT JOIN departments d ON e_de_dm.dedm_dept_no = d.dept_no
     GROUP BY e.emp_no
     );
+/* To check if role start date matches salaries start date
+    Returns empty set therefore no need to check 
+WHERE YEAR(s.from_date) = YEAR(e_de_dm.dedm_from_date)
+*/
 
 SELECT * FROM q8_mng;
 
