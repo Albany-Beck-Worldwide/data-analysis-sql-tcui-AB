@@ -221,14 +221,12 @@ CREATE OR REPLACE TEMPORARY TABLE HR_emp (
     INNER JOIN e_de_dm ON e.emp_no = e_de_dm.e_emp_no
     LEFT JOIN departments d ON d.dept_no = e_de_dm.dedm_dept_no
     WHERE 
-    dept_name = 'Human Resources'
+    dept_name = 'Human Resources' AND YEAR(Hire_Date) > 1986
 );
 
 SELECT Full_Name, 
 Hire_Date
 FROM HR_emp;
-
-/* WHERE YEAR(Hire_Date) > 1986; */ 
 
 
 /* 6. Create a SQL statement to increase any employee’s salary up to 2%. Assume the 
