@@ -172,7 +172,7 @@ GROUP BY e.emp_no;
 name. */
 
 SELECT CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name,
-MAX(s.salary) AS Salary,
+GROUP_CONCAT(DISTINCT s.salary) AS Salary,
 GROUP_CONCAT(DISTINCT d.dept_name) AS Department_Name
 FROM employees e
 INNER JOIN e_de_dm ON e.emp_no = e_de_dm.e_emp_no
@@ -281,17 +281,60 @@ first_name LIKE 'A%';
 
 /* 8. Create a database view to list the full names of all departments’ managers, and their 
 salaries. */
+/* NOT WORKING
+WITH q8_cte AS (
+    SELECT e.emp_no AS 'e_emp_no', 
+    de.emp_no AS 'dedm_emp_no', 
+    de.dept_no AS 'dedm_dept_no', 
+    de.from_date AS 'dedm_from_date', 
+    de.to_date AS 'dedm_to_date'
+    FROM employees e
+    LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
 
+    UNION ALL
+
+    SELECT e.emp_no AS 'e_emp_no', 
+    dm.emp_no AS 'dedm_emp_no', 
+    dm.dept_no AS 'dedm_dept_no', 
+    dm.from_date AS 'dedm_from_date', 
+    dm.to_date AS 'dedm_to_date'
+    FROM employees e
+    LEFT JOIN dept_manager dm ON e.emp_no = dm.emp_no
+)
 CREATE OR REPLACE VIEW dept_mng_sal AS (
     SELECT d.dept_name AS Department_Name,
     CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name,
     MAX(s.salary) AS Salary
     FROM employees e
-    INNER JOIN dept_manager dm ON e.emp_no = dm.emp_no
+    INNER JOIN q8_cte ON q8_cte.e_emp_no = e.emp_no
     INNER JOIN departments d ON dm.dept_no = d.dept_no
     LEFT JOIN salaries s ON e.emp_no = s.emp_no
     GROUP BY e.emp_no
 );
+*/
+
+CREATE OR REPLACE VIEW q8_mng AS (
+    SELECT GROUP_CONCAT(d.dept_name) AS Department_Name,
+    CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name, 
+    GROUP_CONCAT(DISTINCT s.salary) AS Salary
+
+    FROM employees e
+
+    INNER JOIN (            
+        SELECT e.emp_no AS 'e_emp_no', 
+        dm.emp_no AS 'dedm_emp_no', 
+        dm.dept_no AS 'dedm_dept_no', 
+        dm.from_date AS 'dedm_from_date', 
+        dm.to_date AS 'dedm_to_date'
+        FROM employees e
+        INNER JOIN dept_manager dm ON e.emp_no = dm.emp_no
+    ) e_de_dm ON e.emp_no = e_de_dm.e_emp_no
+    LEFT JOIN salaries s ON e.emp_no = s.emp_no
+    LEFT JOIN departments d ON e_de_dm.dedm_dept_no = d.dept_no
+    GROUP BY e.emp_no
+    );
+
+SELECT * FROM q8_mng;
 
 
 /* 9. Create a database view to list all departments and their department’s managers, who 
