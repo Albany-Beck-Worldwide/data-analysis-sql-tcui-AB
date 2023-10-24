@@ -155,8 +155,8 @@ CREATE OR REPLACE TEMPORARY TABLE e_de_dm (
 
 SELECT * FROM e_de_dm;
 
-
 /* 1. Create a SQL statement to list all managers and their titles. */
+
 SELECT e.emp_no AS 'Employee Number', 
 CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name, 
 GROUP_CONCAT(DISTINCT t.title) AS All_Titles
@@ -180,6 +180,18 @@ LEFT JOIN departments d ON d.dept_no = e_de_dm.dedm_dept_no
 LEFT JOIN salaries s ON e.emp_no = s.emp_no
 GROUP BY e.emp_no;
 
+-------------------------------NO UNION------------------------------------
+
+SELECT CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name,
+GROUP_CONCAT(DISTINCT s.salary) AS Salary,
+GROUP_CONCAT(DISTINCT d.dept_name) AS Department_Name
+FROM employees e
+LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
+LEFT JOIN dept_manager dm ON e.emp_no = dm.emp_no
+LEFT JOIN departments d ON d.dept_no = de.dept_no OR d.dept_no = dm.dept_no
+LEFT JOIN salaries s ON e.emp_no = s.emp_no
+GROUP BY e.emp_no;
+
 /* WHERE YEAR(dedm_to_date) = 9999; */ 
 
 /* 3. Create a SQL statement to show the hire date and birth date who belongs to HR 
@@ -197,6 +209,17 @@ WHERE dept_name = 'Human Resources';
 
 /* AND YEAR(dedm_to_date) = 9999; */
 
+-------------------------------NO UNION------------------------------------
+
+SELECT CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name, 
+e.hire_date AS Hire_Date, 
+e.birth_date AS Birth_Date, 
+d.dept_name AS Department_Name
+FROM employees e 
+LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
+LEFT JOIN dept_manager dm ON e.emp_no = dm.emp_no
+LEFT JOIN departments d ON d.dept_no = de.dept_no OR d.dept_no = dm.dept_no
+WHERE dept_name = 'Human Resources';
 
 /* 4. Create a SQL statement to show all departments and their department’s managers. */
 
@@ -227,6 +250,19 @@ CREATE OR REPLACE TEMPORARY TABLE HR_emp (
 SELECT Full_Name, 
 Hire_Date
 FROM HR_emp;
+
+-------------------------------NO UNION------------------------------------
+
+SELECT CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name, 
+e.hire_date AS Hire_Date, 
+e.birth_date AS Birth_Date, 
+d.dept_name AS Department_Name
+FROM employees e 
+LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
+LEFT JOIN dept_manager dm ON e.emp_no = dm.emp_no
+LEFT JOIN departments d ON d.dept_no = de.dept_no OR d.dept_no = dm.dept_no
+WHERE 
+dept_name = 'Human Resources' AND YEAR(Hire_Date) > 1986;
 
 
 /* 6. Create a SQL statement to increase any employee’s salary up to 2%. Assume the 
@@ -270,6 +306,19 @@ CREATE OR REPLACE TEMPORARY TABLE del_mark_A (
     
 );
 /* WHERE YEAR(dedm_to_date) = 9999 */ 
+
+-------------------------------NO UNION------------------------------------
+
+CREATE OR REPLACE TEMPORARY TABLE del_mark_A (
+    SELECT e.*,
+    d.dept_name AS Department_Name
+    FROM employees e
+    LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
+    LEFT JOIN dept_manager dm ON e.emp_no = dm.emp_no
+    LEFT JOIN departments d ON d.dept_no = de.dept_no OR d.dept_no = dm.dept_no
+    
+);
+
 SELECT * FROM del_mark_A;
 
 DELETE FROM del_mark_A
@@ -335,6 +384,20 @@ CREATE OR REPLACE VIEW q8_mng AS (
     Returns empty set therefore no need to check 
 WHERE YEAR(s.from_date) = YEAR(e_de_dm.dedm_from_date)
 */
+
+-------------------------------NO UNION------------------------------------
+
+CREATE OR REPLACE VIEW q8_mng AS (
+    SELECT GROUP_CONCAT(d.dept_name) AS Department_Name,
+    CONCAT_WS(' ', e.first_name, e.last_name) AS Full_Name, 
+    GROUP_CONCAT(DISTINCT s.salary) AS Salary
+
+    FROM employees e
+    INNER JOIN dept_manager dm ON e.emp_no = dm.emp_no
+    LEFT JOIN departments d ON d.dept_no = dm.dept_no
+    LEFT JOIN salaries s ON e.emp_no = s.emp_no
+    GROUP BY e.emp_no
+    );
 
 SELECT * FROM q8_mng;
 
