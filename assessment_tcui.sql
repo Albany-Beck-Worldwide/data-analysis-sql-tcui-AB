@@ -122,11 +122,6 @@ INSERT INTO `titles` VALUES (10001,'Senior Engineer','1986-06-26','9999-01-01'),
 
 
 /*-------------------------------------------------------------------------------------------------------------------------------*/
--- Prep (Run this before anything else to set up temp tables)
--- Every employee with dept_emp information 
--- Every employee with dept_manager information 
--- UNION JOIN TO STACK THE TWO TEMP TABLES ON TOP OF EACH OTHER
-
 /* 1. Create a SQL statement to list all managers and their titles. */
 
 SELECT e.emp_no AS 'Employee Number', 
